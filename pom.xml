@@ -50,6 +50,13 @@
             <artifactId>guava</artifactId>
             <version>23.0</version>
         </dependency>
+        <!-- Lombok 简化Java代码 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.8</version>
+            <scope>provided</scope>
+        </dependency>
         <!--MySQL JDBC驱动-->
         <dependency>
             <groupId>mysql</groupId>

@@ -4,20 +4,14 @@ import com.github.pagehelper.PageHelper;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import tk.mybatis.spring.mapper.MapperScannerConfigurer;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.Properties;
-
-import static com.company.project.core.ProjectConstant.*;
 
 /**
  * Mybatis & Mapper & PageHelper 配置
@@ -25,11 +19,14 @@ import static com.company.project.core.ProjectConstant.*;
 @Configuration
 public class MybatisConfigurer {
 
+    private static final String ENTITY_PACKAGE = "com.**.entity";
+    private static final String MAPPER_PACKAGE = "com.**.dao";//生成的Mapper所在包
+    private static final String MAPPER_INTERFACE_REFERENCE = "com.company.project.common.Mapper";//生成的Mapper所在包
     @Bean
     public SqlSessionFactory sqlSessionFactoryBean(DataSource dataSource) throws Exception {
         SqlSessionFactoryBean factory = new SqlSessionFactoryBean();
         factory.setDataSource(dataSource);
-        factory.setTypeAliasesPackage(MODEL_PACKAGE);
+        factory.setTypeAliasesPackage(ENTITY_PACKAGE);
 
         //配置分页插件，详情请查阅官方文档
         PageHelper pageHelper = new PageHelper();

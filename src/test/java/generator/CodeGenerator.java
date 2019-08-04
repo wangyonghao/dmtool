@@ -1,3 +1,5 @@
+package generator;
+
 import com.google.common.base.CaseFormat;
 import freemarker.template.TemplateExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -11,33 +13,43 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.company.project.core.ProjectConstant.*;
-
 /**
  * 代码生成器，根据数据表名称生成对应的Model、Mapper、Service、Controller简化开发。
  */
 public class CodeGenerator {
+    private static final String AUTHOR = "AutoGenerator";//@author
     //JDBC配置，请修改为你项目的实际配置
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/test";
     private static final String JDBC_USERNAME = "root";
-    private static final String JDBC_PASSWORD = "123456";
+    private static final String JDBC_PASSWORD = "Wy0ngha0";
     private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
 
+    // 包名配置
+    private static final String BASE_PACKAGE = "com.company.project";//生成代码所在的基础包名称，可根据自己公司的项目修改（注意：这个配置修改之后需要手工修改src目录项目默认的包路径，使其保持一致，不然会找不到类）
+
+    private static final String ENTITY_PACKAGE = BASE_PACKAGE + ".entity";//生成的Model所在包
+    private static final String MAPPER_PACKAGE = BASE_PACKAGE + ".dao";//生成的Mapper所在包
+    private static final String SERVICE_PACKAGE = BASE_PACKAGE + ".service";//生成的Service所在包
+    private static final String SERVICE_IMPL_PACKAGE = SERVICE_PACKAGE + ".impl";//生成的ServiceImpl所在包
+    private static final String CONTROLLER_PACKAGE = BASE_PACKAGE + ".controller";//生成的Controller所在包
+    private static final String MAPPER_INTERFACE_REFERENCE = BASE_PACKAGE + ".common.Mapper";//Mapper插件基础接口的完全限定名
+
+    // 生成路径配置
     private static final String PROJECT_PATH = System.getProperty("user.dir");//项目在硬盘上的基础路径
     private static final String TEMPLATE_FILE_PATH = PROJECT_PATH + "/src/test/resources/generator/template";//模板位置
 
     private static final String JAVA_PATH = "/src/main/java"; //java文件路径
-    private static final String RESOURCES_PATH = "/src/main/resources";//资源文件路径
+    private static final String MAPPER_XML_PATH = "/src/main/resources";//资源文件路径
 
-    private static final String PACKAGE_PATH_SERVICE = packageConvertPath(SERVICE_PACKAGE);//生成的Service存放路径
-    private static final String PACKAGE_PATH_SERVICE_IMPL = packageConvertPath(SERVICE_IMPL_PACKAGE);//生成的Service实现存放路径
-    private static final String PACKAGE_PATH_CONTROLLER = packageConvertPath(CONTROLLER_PACKAGE);//生成的Controller存放路径
+    private static final String SERVICE_PACKAGE_PATH = packageConvertPath(SERVICE_PACKAGE);//生成的Service存放路径
+    private static final String SERVICE_IMPL_PACKAGE_PATH = packageConvertPath(SERVICE_IMPL_PACKAGE);//生成的Service实现存放路径
+    private static final String CONTROLLER_PACKAGE_PATH = packageConvertPath(CONTROLLER_PACKAGE);//生成的Controller存放路径
 
-    private static final String AUTHOR = "CodeGenerator";//@author
+
     private static final String DATE = new SimpleDateFormat("yyyy/MM/dd").format(new Date());//@date
 
     public static void main(String[] args) {
-        genCode("输入表名");
+        genCode("user");
         //genCodeByCustomModelName("输入表名","输入自定义Model名称");
     }
 
@@ -51,6 +63,20 @@ public class CodeGenerator {
             genCodeByCustomModelName(tableName, null);
         }
     }
+
+    /**
+     * 根据数据表名称获取，请根据需要自定义规则
+     * 如表名称为"sys_user_detail"，其中sys为子系统，"UserDetail"是模块名
+     * @param tableName 数据表名称
+     */
+    public static String getSubsystemName(String tableName){
+        return StringUtils.strip(tableName,"_");
+    }
+
+
+    public static String getModelName(String tableName){
+       return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, StringUtils.substringAfter(tableName,"_"));
+    };
 
     /**
      * 通过数据表名称，和自定义的 Model 名称生成代码
@@ -86,11 +112,11 @@ public class CodeGenerator {
 
         JavaModelGeneratorConfiguration javaModelGeneratorConfiguration = new JavaModelGeneratorConfiguration();
         javaModelGeneratorConfiguration.setTargetProject(PROJECT_PATH + JAVA_PATH);
-        javaModelGeneratorConfiguration.setTargetPackage(MODEL_PACKAGE);
+        javaModelGeneratorConfiguration.setTargetPackage(ENTITY_PACKAGE);
         context.setJavaModelGeneratorConfiguration(javaModelGeneratorConfiguration);
 
         SqlMapGeneratorConfiguration sqlMapGeneratorConfiguration = new SqlMapGeneratorConfiguration();
-        sqlMapGeneratorConfiguration.setTargetProject(PROJECT_PATH + RESOURCES_PATH);
+        sqlMapGeneratorConfiguration.setTargetProject(PROJECT_PATH + MAPPER_XML_PATH);
         sqlMapGeneratorConfiguration.setTargetPackage("mapper");
         context.setSqlMapGeneratorConfiguration(sqlMapGeneratorConfiguration);
 
@@ -143,7 +169,7 @@ public class CodeGenerator {
             data.put("modelNameLowerCamel", tableNameConvertLowerCamel(tableName));
             data.put("basePackage", BASE_PACKAGE);
 
-            File file = new File(PROJECT_PATH + JAVA_PATH + PACKAGE_PATH_SERVICE + modelNameUpperCamel + "Service.java");
+            File file = new File(PROJECT_PATH + JAVA_PATH + SERVICE_PACKAGE_PATH + modelNameUpperCamel + "Service.java");
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
@@ -151,7 +177,7 @@ public class CodeGenerator {
                     new FileWriter(file));
             System.out.println(modelNameUpperCamel + "Service.java 生成成功");
 
-            File file1 = new File(PROJECT_PATH + JAVA_PATH + PACKAGE_PATH_SERVICE_IMPL + modelNameUpperCamel + "ServiceImpl.java");
+            File file1 = new File(PROJECT_PATH + JAVA_PATH + SERVICE_IMPL_PACKAGE_PATH + modelNameUpperCamel + "ServiceImpl.java");
             if (!file1.getParentFile().exists()) {
                 file1.getParentFile().mkdirs();
             }
@@ -176,7 +202,7 @@ public class CodeGenerator {
             data.put("modelNameLowerCamel", CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, modelNameUpperCamel));
             data.put("basePackage", BASE_PACKAGE);
 
-            File file = new File(PROJECT_PATH + JAVA_PATH + PACKAGE_PATH_CONTROLLER + modelNameUpperCamel + "Controller.java");
+            File file = new File(PROJECT_PATH + JAVA_PATH + CONTROLLER_PACKAGE_PATH + modelNameUpperCamel + "Controller.java");
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
