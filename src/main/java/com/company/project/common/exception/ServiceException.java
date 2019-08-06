@@ -1,4 +1,4 @@
-package com.company.project.common;
+package com.company.project.common.exception;
 
 
 import lombok.Getter;

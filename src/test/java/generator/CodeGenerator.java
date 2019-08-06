@@ -1,8 +1,11 @@
 package generator;
 
+import com.alibaba.druid.support.json.JSONUtils;
+import com.alibaba.fastjson.support.hsf.HSFJSONUtils;
 import com.google.common.base.CaseFormat;
 import freemarker.template.TemplateExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultShellCallback;
@@ -19,9 +22,9 @@ import java.util.*;
 public class CodeGenerator {
     private static final String AUTHOR = "AutoGenerator";//@author
     //JDBC配置，请修改为你项目的实际配置
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/test";
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/test?useSSL=false";
     private static final String JDBC_USERNAME = "root";
-    private static final String JDBC_PASSWORD = "Wy0ngha0";
+    private static final String JDBC_PASSWORD = "123456";
     private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
 
     // 包名配置
@@ -63,20 +66,6 @@ public class CodeGenerator {
             genCodeByCustomModelName(tableName, null);
         }
     }
-
-    /**
-     * 根据数据表名称获取，请根据需要自定义规则
-     * 如表名称为"sys_user_detail"，其中sys为子系统，"UserDetail"是模块名
-     * @param tableName 数据表名称
-     */
-    public static String getSubsystemName(String tableName){
-        return StringUtils.strip(tableName,"_");
-    }
-
-
-    public static String getModelName(String tableName){
-       return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, StringUtils.substringAfter(tableName,"_"));
-    };
 
     /**
      * 通过数据表名称，和自定义的 Model 名称生成代码
@@ -201,13 +190,12 @@ public class CodeGenerator {
             data.put("modelNameUpperCamel", modelNameUpperCamel);
             data.put("modelNameLowerCamel", CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, modelNameUpperCamel));
             data.put("basePackage", BASE_PACKAGE);
-
             File file = new File(PROJECT_PATH + JAVA_PATH + CONTROLLER_PACKAGE_PATH + modelNameUpperCamel + "Controller.java");
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
-            //cfg.getTemplate("controller-restful.ftl").process(data, new FileWriter(file));
-            cfg.getTemplate("controller.ftl").process(data, new FileWriter(file));
+            cfg.getTemplate("controller-restful.ftl").process(data, new FileWriter(file));
+            //cfg.getTemplate("controller.ftl").process(data, new FileWriter(file));
 
             System.out.println(modelNameUpperCamel + "Controller.java 生成成功");
         } catch (Exception e) {
@@ -230,7 +218,6 @@ public class CodeGenerator {
 
     private static String tableNameConvertUpperCamel(String tableName) {
         return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, tableName.toLowerCase());
-
     }
 
     private static String tableNameConvertMappingPath(String tableName) {
@@ -240,6 +227,7 @@ public class CodeGenerator {
 
     private static String modelNameConvertMappingPath(String modelName) {
         String tableName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, modelName);
+        tableName = Inflector.getInstance().pluralize(tableName);
         return tableNameConvertMappingPath(tableName);
     }
 
