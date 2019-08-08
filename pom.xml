@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.lihengming</groupId>
-    <artifactId>spring-boot-api-project-seed</artifactId>
+    <artifactId>ssm-api-seed</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
