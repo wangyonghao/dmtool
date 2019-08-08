@@ -1,11 +1,8 @@
 package generator;
 
-import com.alibaba.druid.support.json.JSONUtils;
-import com.alibaba.fastjson.support.hsf.HSFJSONUtils;
 import com.google.common.base.CaseFormat;
 import freemarker.template.TemplateExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultShellCallback;
@@ -20,7 +17,7 @@ import java.util.*;
  * 代码生成器，根据数据表名称生成对应的Model、Mapper、Service、Controller简化开发。
  */
 public class CodeGenerator {
-    private static final String AUTHOR = "AutoGenerator";//@author
+
     //JDBC配置，请修改为你项目的实际配置
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/test?useSSL=false";
     private static final String JDBC_USERNAME = "root";
@@ -48,7 +45,7 @@ public class CodeGenerator {
     private static final String SERVICE_IMPL_PACKAGE_PATH = packageConvertPath(SERVICE_IMPL_PACKAGE);//生成的Service实现存放路径
     private static final String CONTROLLER_PACKAGE_PATH = packageConvertPath(CONTROLLER_PACKAGE);//生成的Controller存放路径
 
-
+    private static final String AUTHOR = System.getProperty("user.name");
     private static final String DATE = new SimpleDateFormat("yyyy/MM/dd").format(new Date());//@date
 
     public static void main(String[] args) {
@@ -63,8 +60,12 @@ public class CodeGenerator {
      */
     public static void genCode(String... tableNames) {
         for (String tableName : tableNames) {
-            genCodeByCustomModelName(tableName, null);
+            genCodeByCustomModelName(tableName, parseModelName(tableName));
         }
+    }
+
+    private static String parseModelName(String tableName){
+        return StringUtils.substringBefore(tableName,"_");
     }
 
     /**
@@ -162,9 +163,8 @@ public class CodeGenerator {
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
-            cfg.getTemplate("service.ftl").process(data,
-                    new FileWriter(file));
-            System.out.println(modelNameUpperCamel + "Service.java 生成成功");
+            cfg.getTemplate("service.ftl").process(data, new FileWriter(file));
+            System.out.println(file.getName() + " 生成成功");
 
             File file1 = new File(PROJECT_PATH + JAVA_PATH + SERVICE_IMPL_PACKAGE_PATH + modelNameUpperCamel + "ServiceImpl.java");
             if (!file1.getParentFile().exists()) {
@@ -172,7 +172,7 @@ public class CodeGenerator {
             }
             cfg.getTemplate("service-impl.ftl").process(data,
                     new FileWriter(file1));
-            System.out.println(modelNameUpperCamel + "ServiceImpl.java 生成成功");
+            System.out.println(file1.getName() + "生成成功");
         } catch (Exception e) {
             throw new RuntimeException("生成Service失败", e);
         }
@@ -197,7 +197,7 @@ public class CodeGenerator {
             cfg.getTemplate("controller-restful.ftl").process(data, new FileWriter(file));
             //cfg.getTemplate("controller.ftl").process(data, new FileWriter(file));
 
-            System.out.println(modelNameUpperCamel + "Controller.java 生成成功");
+            System.out.println(file.getName() + "生成成功");
         } catch (Exception e) {
             throw new RuntimeException("生成Controller失败", e);
         }

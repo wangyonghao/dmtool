@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * 英文单数、复数转换辅助类
  * Transforms words (from singular to plural, from camelCase to under_score, etc.). I got bored of doing Real Work...
  * @author wangyonghao
  * @date 2019-08-05
